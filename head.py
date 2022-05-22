@@ -32,8 +32,8 @@ def st():
       d8'        `8b Y8a.    .a8P 88     "88,      88  d8'        `8b   
      d8'          `8b `"Y8888Y"'  88       Y8b     88 d8'          `8b  
                                                                     
-                AruCo Kinematics Tracking Algorithm
-                            By Hausen Wu                                                                    
+                    AruCo Kinematics Tracking Algorithm
+                                              By Hausen Wu                                                                    
     ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
     '''
 

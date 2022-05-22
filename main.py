@@ -161,7 +161,6 @@ else:
 
 # calculating line of best fit using numpy
 bf_5 = np.polyfit(f_5, v_5, 1)
-print(bf_5)
 l_5 = bf_5[1] + np.multiply(bf_5[0], f_5)
 
 # comment out next two lines for single cart tracking

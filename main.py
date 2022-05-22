@@ -3,16 +3,18 @@ import numpy as np
 import time
 import imutil
 import matplotlib.pyplot as plt
+import head
 
 # intinialise opencv for video capture
-cam = cv2.VideoCapture('./far.mov')
+cam = cv2.VideoCapture('./video/day2/far.mov')
 
 # enable aruco id tracking library
 
-# i am using the 5x5 dictionary with 50 possible ids
+# i am using the 5x5 dictionary with 50 identical ids
+# it is the smallest library so the most efficient
 aruco = cv2.aruco.Dictionary_get(cv2.aruco.DICT_5X5_50)
 
-# create detector
+# create id detector
 param = cv2.aruco.DetectorParameters_create()
 
 # list of locations for calculating the velocity
@@ -30,11 +32,14 @@ f_39 = []
 # timer for frame rate calculaion
 pTime = 0
 
-# frame rate
+# processing_frame rate
 fps = 0
 
 # current frame number
 f_cnt = 0
+
+# video frame rate
+v_fps = 240
 
 # function used to calculate velocity
 def calcV(id, cX, cY):
@@ -49,7 +54,7 @@ def calcV(id, cX, cY):
 
         # calculate velocity using last location and last frame
         # multiplying by fps of 240
-        v = np.sqrt(((cX - x) ** 2 + (cY-y) ** 2)) / (f_cnt - f)
+        v = np.sqrt(((cX - x) ** 2 + (cY-y) ** 2)) / (f_cnt - f) * v_fps
         return v
     
     elif id == 39 and len(loc_39) > 0:
@@ -62,18 +67,19 @@ def calcV(id, cX, cY):
 
         # calculate velocity using last location and last frame
         # multiplying by fps of 240
-        v = np.sqrt(((cX - x) ** 2 + (cY-y) ** 2)) / (f_cnt - f) 
+        v = np.sqrt(((cX - x) ** 2 + (cY-y) ** 2)) / (f_cnt - f) * v_fps
         return v
 
     return 0
-
 
 while True:
      # read webcam
     ret_val, img = cam.read()
 
-    # # resize image to reduce CPU load
-    # img = imutil.resize(img, 600)
+    ###***  REMOVED BECAUSE SMALL RESOLUTION CAUSES LESS ACCURATE DATA  ***###
+    # resize image to reduce CPU load                                        #
+    # img = imutil.resize(img, 600)                                          #
+    ##########################################################################
 
     # look for marker in image
     (corners, ids, rejected) = cv2.aruco.detectMarkers(img, aruco, parameters=param)
@@ -144,8 +150,6 @@ while True:
     if cv2.waitKey(1) == 27: 
         break  
 
-print('goodnight')
-
 # get the first and last frame one of the ids is detected for drawing the graph
 if len(f_5) > 0 and len(f_39) > 0:
     f_init = f_5[0] if f_5[0] < f_39[0] else f_39[0]
@@ -155,11 +159,12 @@ else:
     f_init = f_5[0] if len(f_5) > 0 else f_39[0]
     f_final = f_5[-1] if len(f_5) > 0 else f_39[-1]
 
-# line of best fit
+# calculating line of best fit using numpy
 bf_5 = np.polyfit(f_5, v_5, 1)
 print(bf_5)
 l_5 = bf_5[1] + np.multiply(bf_5[0], f_5)
 
+# comment out next two lines for single cart tracking
 bf_39 = np.polyfit(f_39, v_39, 1)
 l_39 = bf_39[1] + np.multiply(bf_39[0], f_39)
 
@@ -168,6 +173,7 @@ plt.close('all')
 
 # first graph for cart with ID 5
 plt.subplot(2,1,1)
+plt.title('Draft Launch')
 plt.plot(f_5, v_5, 'o')
 plt.plot(f_5, l_5, 'r', label='ID 5 -- y = %.7fx + %.3f' % (bf_5[0], bf_5[1]))
 plt.grid()
@@ -176,7 +182,7 @@ plt.ylabel('pixels/sec')
 plt.xlim((f_init, f_final))
 plt.xticks(np.arange(f_init, f_final, step=30))
 
-# second graph for cart with ID 39
+# second graph for cart with ID 39 - comment out the following block for single cart tracking
 plt.subplot(2,1,2)
 plt.plot(f_39, v_39, 'o') 
 plt.plot(f_39, l_39, 'g', label='ID 39 -- y = %.7fx + %.3f' % (bf_39[0], bf_39[1]))
@@ -189,3 +195,7 @@ plt.xticks(np.arange(f_init, f_final, step=30))
 
 
 plt.show()
+
+head.st()
+
+print('goodnight')

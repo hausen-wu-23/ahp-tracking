@@ -5,7 +5,7 @@ import imutil
 import matplotlib.pyplot as plt
 
 # intinialise opencv for video capture
-cam = cv2.VideoCapture(0)
+cam = cv2.VideoCapture('./single.mov')
 
 # enable aruco id tracking library
 
@@ -48,8 +48,8 @@ def calcV(id, cX, cY):
         f = loc_5[-1][2]
 
         # calculate velocity using last location and last frame
-        # multiplying by fps to get pixels per second because variable fps
-        v = np.sqrt(((cX - x) ** 2 + (cY-y) ** 2)) / (f_cnt - f) * fps
+        # multiplying by fps of 240
+        v = np.sqrt(((cX - x) ** 2 + (cY-y) ** 2)) / (f_cnt - f)
         return v
     
     elif id == 39 and len(loc_39) > 0:
@@ -61,8 +61,8 @@ def calcV(id, cX, cY):
         f = loc_39[-1][2]
 
         # calculate velocity using last location and last frame
-        # multiplying by fps to get pixels per second because variable fps
-        v = np.sqrt(((cX - x) ** 2 + (cY-y) ** 2)) / (f_cnt - f) * fps
+        # multiplying by fps of 240
+        v = np.sqrt(((cX - x) ** 2 + (cY-y) ** 2)) / (f_cnt - f) 
         return v
 
     return 0
@@ -72,8 +72,8 @@ while True:
      # read webcam
     ret_val, img = cam.read()
 
-    # resize image to reduce CPU load
-    img = imutil.resize(img, 600)
+    # # resize image to reduce CPU load
+    # img = imutil.resize(img, 600)
 
     # look for marker in image
     (corners, ids, rejected) = cv2.aruco.detectMarkers(img, aruco, parameters=param)
@@ -105,9 +105,11 @@ while True:
             cv2.polylines(img, [enclose], True, (0,255,0), thickness=3)
 
             # get the location of center of the id
-            cX = int((tl[0]+br[0]) // 2)
-            cY = int((tl[1]+br[1]) // 2)
-            cv2.circle(img, (cX, cY), 4, (255, 0, 0), -1)
+            cX = (tl[0]+br[0]) / 2
+            cY = (tl[1]+br[1]) / 2
+            dx = int(cX)
+            dy = int(cY)
+            cv2.circle(img, (dx, dy), 4, (255, 0, 0), -1)
 
             # calculate velocity using calcV() function
             v = calcV(id, cX, cY)
@@ -145,24 +147,39 @@ while True:
 print('goodnight')
 
 # get the first and last frame one of the ids is detected for drawing the graph
-f_init = f_5[0] if f_5[0] < f_39[0] else f_39[0]
-f_final = f_5[-1] if f_5[-1] > f_39[-1] else f_39[-1]
+if len(f_5) > 0 and len(f_39) > 0:
+    f_init = f_5[0] if f_5[0] < f_39[0] else f_39[0]
+    f_final = f_5[-1] if f_5[-1] > f_39[-1] else f_39[-1]
+
+else:
+    f_init = f_5[0] if len(f_5) > 0 else f_39[0]
+    f_final = f_5[-1] if len(f_5) > 0 else f_39[-1]
+
+# line of best fit
+bf_5 = np.polyfit(f_5, v_5, 1)
+print(bf_5)
+l_5 = bf_5[1] + np.multiply(bf_5[0], f_5)
+
+bf_39 = np.polyfit(f_39, v_39, 1)
+l_39 = bf_39[1] + np.multiply(bf_39[0], f_39)
 
 # close any previous graphing window
 plt.close('all')
 
 # first graph for cart with ID 5
 plt.subplot(2,1,1)
-plt.plot(f_5, v_5, 'r', label='ID 5')
+plt.plot(f_5, v_5, 'o')
+plt.plot(f_5, l_5, 'r', label='ID 5')
 plt.grid()
 plt.legend()
-plt.xlabel('Frame')
+plt.ylabel('pixels/sec') 
 plt.xlim((f_init, f_final))
 plt.xticks(np.arange(f_init, f_final, step=30))
 
 # second graph for cart with ID 39
 plt.subplot(2,1,2)
-plt.plot(f_39, v_39, 'g', label='ID 39') 
+plt.plot(f_39, v_39, 'o') 
+plt.plot(f_39, l_39, 'g', label='ID 39')
 plt.grid() 
 plt.legend()
 plt.xlabel('Frame')

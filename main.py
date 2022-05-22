@@ -5,7 +5,7 @@ import imutil
 import matplotlib.pyplot as plt
 
 # intinialise opencv for video capture
-cam = cv2.VideoCapture('./single.mov')
+cam = cv2.VideoCapture('./far.mov')
 
 # enable aruco id tracking library
 
@@ -169,7 +169,7 @@ plt.close('all')
 # first graph for cart with ID 5
 plt.subplot(2,1,1)
 plt.plot(f_5, v_5, 'o')
-plt.plot(f_5, l_5, 'r', label='ID 5')
+plt.plot(f_5, l_5, 'r', label='ID 5 -- y = %.7fx + %.3f' % (bf_5[0], bf_5[1]))
 plt.grid()
 plt.legend()
 plt.ylabel('pixels/sec') 
@@ -179,7 +179,7 @@ plt.xticks(np.arange(f_init, f_final, step=30))
 # second graph for cart with ID 39
 plt.subplot(2,1,2)
 plt.plot(f_39, v_39, 'o') 
-plt.plot(f_39, l_39, 'g', label='ID 39')
+plt.plot(f_39, l_39, 'g', label='ID 39 -- y = %.7fx + %.3f' % (bf_39[0], bf_39[1]))
 plt.grid() 
 plt.legend()
 plt.xlabel('Frame')

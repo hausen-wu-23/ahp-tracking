@@ -4,9 +4,15 @@ import time
 import imutil
 import matplotlib.pyplot as plt
 import head
+import argparse as ap
+
+parse = ap.ArgumentParser()
+parse.add_argument("-i", "--input", required=True, help="Path to the video")
+
+args = vars(parse.parse_args())
 
 # intinialise opencv for video capture
-cam = cv2.VideoCapture('./video/day2/far.mov')
+cam = cv2.VideoCapture(args['input'])
 
 # enable aruco id tracking library
 

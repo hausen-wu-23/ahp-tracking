@@ -39,4 +39,3 @@ def st():
 
     print(n)
 
-st()
